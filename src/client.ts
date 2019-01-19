@@ -1,7 +1,8 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 
-import { Config } from ".";
-import getTokenRefresher, { Authorizer, TokenRefresher } from "./oauth";
+import getTokenRefresher, { Authorizer, TokenRefresher } from "./auth";
+
+import { Config } from "./types";
 import { Subscription } from "./users";
 
 export function createBasicClient(config: Subscription): AxiosInstance {

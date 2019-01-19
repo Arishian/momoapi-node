@@ -1,8 +1,16 @@
 import { expect } from "chai";
 
-import { createBasicAuthToken } from "../src/oauth";
+import { createBasicAuthToken } from "../src/auth";
 
-describe("OAuth", function() {
+describe("Auth", function() {
+  describe("getTokenRefresher", function() {
+    // ...
+  });
+
+  describe("authorizeCollections", function() {
+    // ...
+  });
+
   describe("createBasicAuthToken", function() {
     it("encodes id and secret in base64", function() {
       expect(

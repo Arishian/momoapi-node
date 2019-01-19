@@ -1,51 +1,25 @@
 import { AxiosInstance } from "axios";
 import uuid from "uuid/v4";
 
-import { Config } from ".";
-import { createOAuthClient } from "./client";
-import { authorizeCollections } from "./oauth";
-
-export interface PaymentRequest {
-  amount: string;
-  currency: string;
-  externalId: string;
-  payer: Payer;
-  payerMessage: string;
-  payeeNote: string;
-  callbackUrl?: string;
-}
-
-export interface Transaction {
-  financialTransactionId: string;
-  externalId: string;
-  amount: string;
-  currency: string;
-  payer: Payer;
-  payerMessage: string;
-  payeeNote: string;
-  status: TransactionStatus;
-}
-
-export interface AccountBalance {
-  availableBalance: string;
-  currency: string;
-}
-
-export interface Payer {
-  partyIdType: "MSISDN" | string;
-  partyId: string;
-}
-
-// TODO: Get all valid transaction statuses
-export type TransactionStatus = "SUCCESSFUL" | string;
+import { AccountBalance, PartyIdType, Payer, PaymentRequest, Transaction } from "./types";
 
 export default class Collections {
   private client: AxiosInstance;
 
-  constructor(config: Config) {
-    this.client = createOAuthClient(config, authorizeCollections);
+  constructor(client: AxiosInstance) {
+    this.client = client;
   }
 
+  /**
+   * This operation is used to request a payment from a consumer (Payer).
+   * The payer will be asked to authorize the payment. The transaction will
+   * be executed once the payer has authorized the payment.
+   * The requesttopay will be in status PENDING until the transaction
+   * is authorized or declined by the payer or it is timed out by the system.
+   * Status of the transaction can be validated by using the GET /requesttopay/<resourceId>
+   *
+   * @param paymentRequest
+   */
   public requestToPay(paymentRequest: PaymentRequest): Promise<string> {
     const referenceId: string = uuid();
     return this.client
@@ -58,15 +32,40 @@ export default class Collections {
       .then(() => referenceId);
   }
 
+  /**
+   * This operation is used to get the status of a request to pay.
+   *
+   * @param referenceId the value returned by `getTransactionStatus
+   */
   public getTransactionStatus(referenceId: string): Promise<Transaction> {
     return this.client
-      .get(`/colection/v1_0/requesttopay/${referenceId}`)
+      .get<Transaction>(`/colection/v1_0/requesttopay/${referenceId}`)
       .then(response => response.data);
   }
 
+  /**
+   * Get the balance of the account.
+   */
   public getAccountBalance(): Promise<AccountBalance> {
     return this.client
-      .get("/colection/v1_0/account/balance")
+      .get<AccountBalance>("/colection/v1_0/account/balance")
+      .then(response => response.data);
+  }
+
+  /**
+   * Operation is used to check if an account holder is registered and active in the system.
+   *
+   * @param id Specifies the type of the party ID. Allowed values [msisdn, email, party_code].
+   *   accountHolderId should explicitly be in small letters.
+   *
+   * @param type The party number. Validated according to the party ID type (case Sensitive).
+   *   msisdn - Mobile Number validated according to ITU-T E.164. Validated with IsMSISDN
+   *   email - Validated to be a valid e-mail format. Validated with IsEmail
+   *   party_code - UUID of the party. Validated with IsUuid
+   */
+  public getPayerStatus(id: string, type: PartyIdType = "MSISDN"): Promise<any> {
+    return this.client
+      .get(`/collection/v1_0/accountholder/${type}/${id}/active`)
       .then(response => response.data);
   }
 }

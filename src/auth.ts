@@ -1,13 +1,9 @@
 import moment from "moment";
 
-import { Config } from ".";
 import { createBasicClient } from "./client";
 
-export interface AccessToken {
-  access_token: string;
-  token_type: "string";
-  expires_in: 3600;
-}
+import { Config } from "./types";
+import { AccessToken } from "./types";
 
 export interface OAuthCredentials {
   accessToken: string;

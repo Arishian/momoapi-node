@@ -1,11 +1,8 @@
 import { AxiosInstance } from "axios";
 import uuid from "uuid/v4";
 
-import { createBasicClient } from "./client";
+import { Credentials } from "./types";
 
-export interface Credentials {
-  apiKey: string;
-}
 export interface Subscription {
   baseUrl?: string;
   subscriptionKey: string;
@@ -14,8 +11,8 @@ export interface Subscription {
 export default class Users {
   private client: AxiosInstance;
 
-  constructor(config: Subscription) {
-    this.client = createBasicClient(config);
+  constructor(client: AxiosInstance) {
+    this.client = client;
   }
 
   public create(host: string): Promise<string> {
@@ -35,7 +32,7 @@ export default class Users {
 
   public login(userId: string): Promise<Credentials> {
     return this.client
-      .post<Credentials>(`v1_0/apiuser/${userId}/apikey`)
+      .post<Credentials>(`/v1_0/apiuser/${userId}/apikey`)
       .then(response => response.data);
   }
 }

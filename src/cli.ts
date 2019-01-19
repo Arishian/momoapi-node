@@ -2,7 +2,10 @@
 
 import program from "commander";
 
-import { Credentials, Users } from ".";
+import Users from "./users";
+
+import { createBasicClient } from "./client";
+import { Credentials } from "./types";
 
 const { version } = require("../package.json");
 
@@ -15,7 +18,8 @@ program
 
 const stringify = (obj: object) => JSON.stringify(obj, null, 2);
 
-const users = new Users({ subscriptionKey: program.primaryKey });
+const client = createBasicClient({ subscriptionKey: program.primaryKey });
+const users = new Users(client);
 
 users
   .create(program.host)
